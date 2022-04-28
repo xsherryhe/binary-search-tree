@@ -8,8 +8,8 @@ class Node
     @right = right
   end
 
-  def <=>(other_node)
-    value <=> other_node.value
+  def <=>(other)
+    value <=> other.value
   end
 end
 
@@ -59,9 +59,9 @@ class Tree
 
   def delete_two_child_node(node)
     successor = min(node.right)
-    successor.right = delete_node(successor, node.right)
-    successor.left = node.left
-    successor
+    node.right = delete_node(successor, node.right)
+    node.value = successor.value
+    node
   end
 
   def min(node)
