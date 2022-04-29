@@ -27,46 +27,6 @@ class Tree
     Node.new(arr[mid], build_tree(arr, start, mid - 1), build_tree(arr, mid + 1, finish))
   end
 
-  def insert(value)
-    self.root = insert_node(Node.new(value), root)
-  end
-
-  def insert_node(new_node, node)
-    return new_node unless node
-
-    node.left = insert_node(new_node, node.left) if new_node < node
-    node.right = insert_node(new_node, node.right) if new_node > node
-    node
-  end
-
-  def delete(value)
-    self.root = delete_node(Node.new(value), root)
-  end
-
-  def delete_node(target_node, node)
-    return unless node
-    return node.left && node.right ? delete_two_child_node(node) : delete_one_child_node(node) if target_node == node
-
-    node.left = delete_node(target_node, node.left) if target_node < node
-    node.right = delete_node(target_node, node.right) if target_node > node
-    node
-  end
-
-  def delete_one_child_node(node)
-    node.left || node.right
-  end
-
-  def delete_two_child_node(node)
-    successor = min(node.right)
-    node.right = delete_node(successor, node.right)
-    node.value = successor.value
-    node
-  end
-
-  def min(node)
-    node.left ? min(node.left) : node
-  end
-
   def find(value, node = root)
     return unless node
     return node if value == node.value
@@ -75,62 +35,108 @@ class Tree
     find(value, node.right) if value > node.value
   end
 
-  def level_order_it(&block)
-    return [] unless root
-
-    queue = [root]
-    pointer = 0
-    while pointer < queue.size
-      node = queue[pointer]
-      queue += [node.left, node.right].compact
-      block&.call(node)
-      pointer += 1
+  module InsertAndDelete
+    def insert(value)
+      self.root = insert_node(Node.new(value), root)
     end
-    queue
+
+    def insert_node(new_node, node)
+      return new_node unless node
+
+      node.left = insert_node(new_node, node.left) if new_node < node
+      node.right = insert_node(new_node, node.right) if new_node > node
+      node
+    end
+
+    def delete(value)
+      self.root = delete_node(Node.new(value), root)
+    end
+
+    def delete_node(target_node, node)
+      return unless node
+      return node.left && node.right ? delete_two_child_node(node) : delete_one_child_node(node) if target_node == node
+
+      node.left = delete_node(target_node, node.left) if target_node < node
+      node.right = delete_node(target_node, node.right) if target_node > node
+      node
+    end
+
+    def delete_one_child_node(node)
+      node.left || node.right
+    end
+
+    def delete_two_child_node(node)
+      successor = min(node.right)
+      node.right = delete_node(successor, node.right)
+      node.value = successor.value
+      node
+    end
+
+    def min(node)
+      node.left ? min(node.left) : node
+    end
   end
+  include self::InsertAndDelete
 
-  def level_order_rec(queue = [root], pointer = 0, &block)
-    return [] unless root
-    return queue if pointer >= queue.size
+  module Traversal
+    def level_order_it(&block)
+      return [] unless root
 
-    node = queue[pointer]
-    block&.call(node)
-    level_order_rec(queue + [node.left, node.right].compact, pointer + 1, &block)
+      queue = [root]
+      pointer = 0
+      while pointer < queue.size
+        node = queue[pointer]
+        queue += [node.left, node.right].compact
+        block&.call(node)
+        pointer += 1
+      end
+      queue
+    end
+
+    def level_order_rec(queue = [root], pointer = 0, &block)
+      return [] unless root
+      return queue if pointer >= queue.size
+
+      node = queue[pointer]
+      block&.call(node)
+      level_order_rec(queue + [node.left, node.right].compact, pointer + 1, &block)
+    end
+
+    alias level_order level_order_it
+
+    def in_order(node = root, &block)
+      return [] unless node
+
+      array = []
+      array += in_order(node.left, &block)
+      block&.call(node)
+      array << node
+      array += in_order(node.right, &block)
+      array
+    end
+
+    def pre_order(node = root, &block)
+      return [] unless node
+
+      array = []
+      block&.call(node)
+      array << node
+      array += pre_order(node.left, &block)
+      array += pre_order(node.right, &block)
+      array
+    end
+
+    def post_order(node = root, &block)
+      return [] unless node
+
+      array = []
+      array += post_order(node.left, &block)
+      array += post_order(node.right, &block)
+      block&.call(node)
+      array << node
+    end
   end
-
-  alias level_order level_order_it
-
-  def in_order(node = root, &block)
-    return [] unless node
-
-    array = []
-    array += in_order(node.left, &block)
-    block&.call(node)
-    array << node
-    array += in_order(node.right, &block)
-    array
-  end
-
-  def pre_order(node = root, &block)
-    return [] unless node
-
-    array = []
-    block&.call(node)
-    array << node
-    array += pre_order(node.left, &block)
-    array += pre_order(node.right, &block)
-    array
-  end
-
-  def post_order(node = root, &block)
-    return [] unless node
-
-    array = []
-    array += post_order(node.left, &block)
-    array += post_order(node.right, &block)
-    block&.call(node)
-    array << node
-  end
+  include self::Traversal
 
   def pretty_print(node = @root, prefix = '', is_left = true)
     pretty_print(node.right, "#{prefix}#{is_left ? '│   ' : '    '}", false) if node.right
