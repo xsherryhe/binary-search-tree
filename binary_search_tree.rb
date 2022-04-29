@@ -176,33 +176,3 @@ class Tree
     pretty_print(node.left, "#{prefix}#{is_left ? '    ' : '│   '}", true) if node.left
   end
 end
-
-tree = Tree.new([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324])
-p tree.balanced?
-tree.insert(6)
-tree.pretty_print
-tree.insert(321)
-tree.pretty_print
-tree.delete(67)
-tree.pretty_print
-tree.delete(8)
-tree.pretty_print
-tree.delete(20)
-tree.pretty_print
-tree.level_order { |node| p node.value }
-tree.level_order_rec { |node| p node.value }
-tree.in_order { |node| p node.value }
-tree.pre_order { |node| p node.value }
-tree.post_order { |node| p node.value }
-p tree.height
-p tree.depth(tree.find(324))
-
-unbalanced_tree = Tree.new([3])
-p unbalanced_tree.balanced?
-unbalanced_tree.insert(2)
-unbalanced_tree.insert(1)
-unbalanced_tree.pretty_print
-p unbalanced_tree.balanced?
-unbalanced_tree.rebalance
-unbalanced_tree.pretty_print
-p unbalanced_tree.balanced?
