@@ -138,6 +138,24 @@ class Tree
   end
   include self::Traversal
 
+  module Size
+    def height(node = root, count = 0)
+      return count unless node
+
+      left = node.left ? height(node.left, count + 1) : count
+      right = node.right ? height(node.right, count + 1) : count
+      [left, right].max
+    end
+
+    def depth(target_node, search_node = root, count = 0)
+      return unless search_node && target_node
+      return count if target_node == search_node
+
+      depth(target_node, target_node < search_node ? search_node.left : search_node.right, count + 1)
+    end
+  end
+  include self::Size
+
   def pretty_print(node = @root, prefix = '', is_left = true)
     pretty_print(node.right, "#{prefix}#{is_left ? '│   ' : '    '}", false) if node.right
     puts "#{prefix}#{is_left ? '└── ' : '┌── '}#{node.value}"
@@ -161,3 +179,5 @@ tree.level_order_rec { |node| p node.value }
 tree.in_order { |node| p node.value }
 tree.pre_order { |node| p node.value }
 tree.post_order { |node| p node.value }
+p tree.height
+p tree.depth(tree.find(44))
