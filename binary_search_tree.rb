@@ -140,10 +140,10 @@ class Tree
 
   module Size
     def height(node = root, count = 0)
-      return count unless node
+      return unless node
 
-      left = node.left ? height(node.left, count + 1) : count
-      right = node.right ? height(node.right, count + 1) : count
+      left = height(node.left, count + 1) || count
+      right = height(node.right, count + 1) || count
       [left, right].max
     end
 
@@ -156,6 +156,20 @@ class Tree
   end
   include self::Size
 
+  module Balance
+    def balanced?(node = root)
+      return true unless node
+
+      ((height(node.left) || -1) - (height(node.right) || -1)).abs <= 1 &&
+        balanced?(node.left) && balanced?(node.right)
+    end
+
+    def rebalance
+      self.root = build_tree(in_order.map(&:value))
+    end
+  end
+  include self::Balance
+
   def pretty_print(node = @root, prefix = '', is_left = true)
     pretty_print(node.right, "#{prefix}#{is_left ? '│   ' : '    '}", false) if node.right
     puts "#{prefix}#{is_left ? '└── ' : '┌── '}#{node.value}"
@@ -164,6 +178,7 @@ class Tree
 end
 
 tree = Tree.new([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324])
+p tree.balanced?
 tree.insert(6)
 tree.pretty_print
 tree.insert(321)
@@ -180,4 +195,14 @@ tree.in_order { |node| p node.value }
 tree.pre_order { |node| p node.value }
 tree.post_order { |node| p node.value }
 p tree.height
-p tree.depth(tree.find(44))
+p tree.depth(tree.find(324))
+
+unbalanced_tree = Tree.new([3])
+p unbalanced_tree.balanced?
+unbalanced_tree.insert(2)
+unbalanced_tree.insert(1)
+unbalanced_tree.pretty_print
+p unbalanced_tree.balanced?
+unbalanced_tree.rebalance
+unbalanced_tree.pretty_print
+p unbalanced_tree.balanced?
